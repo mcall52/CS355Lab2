@@ -1,6 +1,7 @@
 package cs355.model.drawing;
 
 import java.awt.Color;
+import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
 
 /**
@@ -69,6 +70,11 @@ public class Rectangle extends Shape {
 				new Point2D.Double(getCenter().getX() - (getWidth() / 2), getCenter().getY() - (getHeight() / 2));
 		return upperleft;
 	}
+	
+//	private Point2D.Double getLowerRight() {
+//		Point2D.Double lowerright = 
+//				new Point2D.Double(getCenter().getX(), arg1)
+//	}
 
 	/**
 	 * Add your code to do an intersection test
@@ -80,7 +86,20 @@ public class Rectangle extends Shape {
 	 */
 	@Override
 	public boolean pointInShape(Point2D.Double pt, double tolerance) {
-		throw new UnsupportedOperationException("Not supported yet.");
+		//throw new UnsupportedOperationException("Not supported yet.");
+		Point2D.Double objpt = new Point2D.Double();
+		AffineTransform worldToObj = new AffineTransform();
+		worldToObj.translate(-this.getCenter().getX(), -this.getCenter().getY());
+		worldToObj.rotate(-this.getRotation());
+		worldToObj.transform(pt, objpt);
+		
+		//if objpt is inside shape
+		boolean isInside = false;
+		if(objpt.getX() <= this.getWidth()/2 && objpt.getX() >= -this.getWidth()/2
+				&& objpt.getY() <= this.getHeight()/2 && objpt.getY() >= -this.getHeight()/2){
+			isInside = true;
+		}
+		return isInside;
 	}
 
 }

@@ -24,10 +24,12 @@ public class DrawableTriangle extends Triangle implements DrawableShape {
 		objToWorld.translate(getCenter().getX(), getCenter().getY());
 		g2g.setTransform(objToWorld);
 		
-		int[] xpoints = new int[]{(int) this.getA().getX(), 
-				(int) this.getB().getX(), (int) this.getC().getX()};
-		int[] ypoints = new int[]{(int) this.getA().getY(), 
-				(int) this.getB().getY(), (int) this.getC().getY()};
+		int[] xpoints = new int[]{(int) (this.getA().getX() - this.getCenter().getX()), 
+				(int) (this.getB().getX() - this.getCenter().getX()), 
+				(int) (this.getC().getX() - this.getCenter().getX())};
+		int[] ypoints = new int[]{(int) (this.getA().getY() - this.getCenter().getY()), 
+				(int) (this.getB().getY() - this.getCenter().getY()), 
+				(int) (this.getC().getY() - this.getCenter().getY())};
 		g2g.fillPolygon(xpoints, ypoints, xpoints.length);
 	}
 

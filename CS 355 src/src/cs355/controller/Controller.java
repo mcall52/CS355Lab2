@@ -52,20 +52,20 @@ public class Controller implements CS355Controller, MouseListener, MouseMotionLi
 	
 	@Override
 	public void mouseClicked(MouseEvent arg0) {
-		Point2D.Double point = new Point2D.Double(arg0.getX(), arg0.getY());
-		GUIFunctions.printf("Point Clicked: %s", point.toString());
-		
-		if(firstclick == null){
-			firstclick = point;
-		}
-		else if(secondclick == null){
-			secondclick = point;
-		}
-		else{
-			thirdclick = point;
-			createtriangle();
-			clearpoints();
-		}
+//		Point2D.Double point = new Point2D.Double(arg0.getX(), arg0.getY());
+//		GUIFunctions.printf("Point Clicked: %s", point.toString());
+//		
+//		if(firstclick == null){
+//			firstclick = point;
+//		}
+//		else if(secondclick == null){
+//			secondclick = point;
+//		}
+//		else{
+//			thirdclick = point;
+//			createtriangle();
+//			clearpoints();
+//		}
 	}
 
 	@Override
@@ -100,17 +100,18 @@ public class Controller implements CS355Controller, MouseListener, MouseMotionLi
 			case SQUARE 	:	createsquare(); break;
 			case ELLIPSE 	:	createellipse(); break;
 			case CIRCLE 	:	createcircle(); break;
-//			case TRIANGLE	:	if(firstclick == null){
-//									firstclick = point;
-//								}
-//								else if(secondclick == null){
-//									secondclick = point;
-//								}
-//								else{
-//									thirdclick = point;
-//									createtriangle();
-//									clearpoints();
-//								}
+			case TRIANGLE	:	if(firstclick == null){
+									firstclick = point;
+								}
+								else if(secondclick == null){
+									secondclick = point;
+								}
+								else{
+									thirdclick = point;
+									createtriangle();
+									clearpoints();
+								} break;
+			case SELECT		:	selectshape();
 		}
 		
 	}
@@ -476,6 +477,22 @@ public class Controller implements CS355Controller, MouseListener, MouseMotionLi
 		Line line = new Line(curcolor, startclick, endclick);
 		model.addShape(line);
 		clearpoints();
+	}
+	
+	private void selectshape() {
+		//use endclick
+		int i = model.getShapes().size();
+		boolean isInside = false;
+		Shape shape;
+		
+		while(i > 0 && !isInside){
+			i--;
+			if(model.getShape(i).pointInShape(endclick, 0)){
+				isInside = true;
+				shape = model.getShape(i);
+				//TODO draw outline and selection tab
+			}
+		}
 	}
 
 	private void clearpoints() {

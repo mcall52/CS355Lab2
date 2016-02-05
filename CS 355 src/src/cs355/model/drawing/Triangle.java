@@ -1,6 +1,7 @@
 package cs355.model.drawing;
 
 import java.awt.Color;
+import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
 
 /**
@@ -93,7 +94,14 @@ public class Triangle extends Shape {
 	 */
 	@Override
 	public boolean pointInShape(Point2D.Double pt, double tolerance) {
-		throw new UnsupportedOperationException("Not supported yet.");
+		//throw new UnsupportedOperationException("Not supported yet.");
+		
+//		AffineTransform worldToObj = new AffineTransform();
+//		worldToObj.translate(tx, ty);
+//		worldToObj.rotate(theta);
+//		worldToObj.transform(worldCoord, objCoord);
+		
+		return true;
 	}
 
 }
