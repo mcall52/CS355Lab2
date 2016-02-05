@@ -33,4 +33,10 @@ public class DrawableTriangle extends Triangle implements DrawableShape {
 		g2g.fillPolygon(xpoints, ypoints, xpoints.length);
 	}
 
+	@Override
+	public void drawOutline(Graphics2D g2g) {
+		// TODO Auto-generated method stub
+		
+	}
+
 }

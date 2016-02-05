@@ -25,5 +25,17 @@ public class DrawableRectangle extends Rectangle implements DrawableShape {
 		g2g.fillRect((int) -(this.getWidth()/2), (int) -(this.getHeight()/2), 
 				(int) this.getWidth(), (int) this.getHeight());
 	}
+	
+	@Override
+	public void drawOutline(Graphics2D g2g) {
+		g2g.setColor(Color.YELLOW);
+		AffineTransform objToWorld = new AffineTransform();
+		objToWorld.rotate(getRotation());
+		objToWorld.translate(getCenter().getX(), getCenter().getY());
+		g2g.setTransform(objToWorld);
+		
+		g2g.drawRect((int) -(this.getWidth()/2), (int) -(this.getHeight()/2), 
+				(int) this.getWidth(), (int) this.getHeight());
+	}
 
 }

@@ -27,8 +27,10 @@ public class View implements ViewRefresher {
 			DrawableShape shape = factory.createShape(s);
 			shape.draw(g2d);
 		}
-		
-		
+		DrawableShape selectedShape = factory.createShape(model.getSelectedShape());
+		if(selectedShape != null) {
+			selectedShape.drawOutline(g2d);
+		}
 	}
 
 	public void addModel(DrawingModel model) {

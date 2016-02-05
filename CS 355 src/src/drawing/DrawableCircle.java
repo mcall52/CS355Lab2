@@ -30,4 +30,10 @@ public class DrawableCircle extends Circle implements DrawableShape {
 				(int) this.getRadius()*2, (int) this.getRadius()*2);
 	}
 
+	@Override
+	public void drawOutline(Graphics2D g2g) {
+		// TODO Auto-generated method stub
+		
+	}
+
 }

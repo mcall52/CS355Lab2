@@ -30,4 +30,10 @@ public class DrawableEllipse extends Ellipse implements DrawableShape {
 				(int) this.getWidth(), (int) this.getHeight());
 	}
 
+	@Override
+	public void drawOutline(Graphics2D g2g) {
+		// TODO Auto-generated method stub
+		
+	}
+
 }

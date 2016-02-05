@@ -491,6 +491,8 @@ public class Controller implements CS355Controller, MouseListener, MouseMotionLi
 				isInside = true;
 				shape = model.getShape(i);
 				//TODO draw outline and selection tab
+				model.setSelectedShape(shape);
+				//model.notifyObservers();
 			}
 		}
 	}
@@ -503,6 +505,7 @@ public class Controller implements CS355Controller, MouseListener, MouseMotionLi
 		
 		startclick = null;
 		endclick = null;
+		//model.setSelectedShape(null);
 	}
 	
 	private double averageOf(double num1, double num2){

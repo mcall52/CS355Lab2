@@ -27,4 +27,10 @@ public class DrawableLine extends Line implements DrawableShape {
 		
 	}
 
+	@Override
+	public void drawOutline(Graphics2D g2g) {
+		// TODO Auto-generated method stub
+		
+	}
+
 }

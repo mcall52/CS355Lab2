@@ -1,6 +1,7 @@
 package cs355.model.drawing;
 
 import java.awt.Color;
+import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
 
 /**
@@ -59,7 +60,20 @@ public class Square extends Shape {
 	 */
 	@Override
 	public boolean pointInShape(Point2D.Double pt, double tolerance) {
-		throw new UnsupportedOperationException("Not supported yet.");
+		//throw new UnsupportedOperationException("Not supported yet.");
+		Point2D.Double objpt = new Point2D.Double();
+		AffineTransform worldToObj = new AffineTransform();
+		worldToObj.translate(-this.getCenter().getX(), -this.getCenter().getY());
+		worldToObj.rotate(-this.getRotation());
+		worldToObj.transform(pt, objpt);
+		
+		//if objpt is inside shape
+		boolean isInside = false;
+		if(objpt.getX() <= this.getSize()/4 && objpt.getX() >= -this.getSize()/4
+				&& objpt.getY() <= this.getSize()/4 && objpt.getY() >= -this.getSize()/4){
+			isInside = true;
+		}
+		return isInside;
 	}
 
 }
