@@ -1,6 +1,7 @@
 package cs355.model.drawing;
 
 import java.awt.Color;
+import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
 
 /**
@@ -53,7 +54,21 @@ public class Circle extends Shape {
 	 */
 	@Override
 	public boolean pointInShape(Point2D.Double pt, double tolerance) {
-		throw new UnsupportedOperationException("Not supported yet.");
+		//throw new UnsupportedOperationException("Not supported yet.");
+		Point2D.Double objpt = new Point2D.Double();
+		AffineTransform worldToObj = new AffineTransform();
+		worldToObj.translate(-this.getCenter().getX(), -this.getCenter().getY());
+		worldToObj.rotate(-this.getRotation());
+		worldToObj.transform(pt, objpt);
+		
+		boolean isInside = false;
+		double xdif = objpt.getX();
+		double ydif = objpt.getY();
+		
+		if(Math.pow(xdif, 2) + Math.pow(ydif, 2) <= Math.pow(radius, 2)){
+			isInside = true;
+		}
+		return isInside;
 	}
 
 }

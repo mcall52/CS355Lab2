@@ -8,6 +8,7 @@ public class DrawingModel extends CS355Drawing {
 
 	private ArrayList<Shape> shapes = new ArrayList();
 	private Shape selectedShape = null;
+	private int selectedShapeIndex = -1;
 	
 	@Override
 	public Shape getShape(int index) {
@@ -24,31 +25,55 @@ public class DrawingModel extends CS355Drawing {
 
 	@Override
 	public void deleteShape(int index) {
-		shapes.remove(index);
+		if(index != -1){
+			shapes.remove(index);
+			selectedShape = null;
+			selectedShapeIndex = -1;
+		}
 	}
 
 	@Override
 	public void moveToFront(int index) {
-		Shape shape = shapes.remove(index);
-		shapes.add(0, shape);
+		if(index != -1){
+			Shape shape = shapes.remove(index);
+			shapes.add(shape);
+			selectedShapeIndex = shapes.size() - 1;
+			this.setChanged();
+			this.notifyObservers();
+		}
 	}
 
 	@Override
 	public void movetoBack(int index) {
-		Shape shape = shapes.remove(index);
-		shapes.add(shape);
+		if(index != -1){
+			Shape shape = shapes.remove(index);
+			shapes.add(0, shape);
+			selectedShapeIndex = 0;
+			this.setChanged();
+			this.notifyObservers();
+		}
 	}
 
 	@Override
 	public void moveForward(int index) {
-		Shape shape = shapes.remove(index);
-		shapes.add(index + 1, shape);
+		if(index != -1 && index != shapes.size()){
+			Shape shape = shapes.remove(index);
+			shapes.add(index + 1, shape);
+			selectedShapeIndex++;
+			this.setChanged();
+			this.notifyObservers();
+		}
 	}
 
 	@Override
 	public void moveBackward(int index) {
-		Shape shape = shapes.remove(index);
-		shapes.add(index - 1, shape);
+		if(index > 0){
+			Shape shape = shapes.remove(index);
+			shapes.add(index - 1, shape);
+			selectedShapeIndex--;
+			this.setChanged();
+			this.notifyObservers();
+		}
 	}
 
 	public List<Shape> getShapes() {
@@ -77,4 +102,15 @@ public class DrawingModel extends CS355Drawing {
 		this.notifyObservers();
 	}
 
+	public int getSelectedShapeIndex() {
+		return selectedShapeIndex;
+	}
+	
+	public void setSelectedShapeIndex(int index) {
+		selectedShapeIndex = index;
+	}
+	
+	public void outsideChange(){
+		this.setChanged();
+	}
 }

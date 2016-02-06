@@ -95,13 +95,30 @@ public class Triangle extends Shape {
 	@Override
 	public boolean pointInShape(Point2D.Double pt, double tolerance) {
 		//throw new UnsupportedOperationException("Not supported yet.");
+		Point2D.Double objpt = new Point2D.Double();
+		AffineTransform worldToObj = new AffineTransform();
+		worldToObj.translate(-this.getCenter().getX(), -this.getCenter().getY());
+		worldToObj.rotate(-this.getRotation());
+		worldToObj.transform(pt, objpt);
 		
-//		AffineTransform worldToObj = new AffineTransform();
-//		worldToObj.translate(tx, ty);
-//		worldToObj.rotate(theta);
-//		worldToObj.transform(worldCoord, objCoord);
-		
-		return true;
+		boolean isInside = true;
+		Point2D.Double[] points = new Point2D.Double[]{a, b, c};
+		for(int i = 0; i < points.length; i++){
+			int next = i + 1;
+			if (next > 2){
+				next = 0;
+			}
+			Point2D.Double distCornToPt = new Point2D.Double(objpt.getX() - points[i].getX(), 
+					objpt.getY() - points[i].getY());
+			Point2D.Double orth = new Point2D.Double((points[next].getX() - points[i].getX()), 
+					points[next].getY() - points[i].getY());
+			double dotProduct = distCornToPt.getX() * -orth.getY() +
+					distCornToPt.getY() * orth.getX();
+			if(dotProduct < 0){
+				isInside = false;
+			}
+		}
+		return isInside;
 	}
 
 }

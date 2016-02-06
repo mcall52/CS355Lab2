@@ -35,6 +35,23 @@ public class DrawableTriangle extends Triangle implements DrawableShape {
 
 	@Override
 	public void drawOutline(Graphics2D g2g) {
+		g2g.setColor(Color.YELLOW);
+		AffineTransform objToWorld = new AffineTransform();
+		objToWorld.rotate(getRotation());
+		objToWorld.translate(getCenter().getX(), getCenter().getY());
+		g2g.setTransform(objToWorld);
+		
+		int[] xpoints = new int[]{(int) (this.getA().getX() - this.getCenter().getX()), 
+				(int) (this.getB().getX() - this.getCenter().getX()), 
+				(int) (this.getC().getX() - this.getCenter().getX())};
+		int[] ypoints = new int[]{(int) (this.getA().getY() - this.getCenter().getY()), 
+				(int) (this.getB().getY() - this.getCenter().getY()), 
+				(int) (this.getC().getY() - this.getCenter().getY())};
+		g2g.drawPolygon(xpoints, ypoints, xpoints.length);
+	}
+
+	@Override
+	public void dragShape(Graphics2D g2g, int index) {
 		// TODO Auto-generated method stub
 		
 	}

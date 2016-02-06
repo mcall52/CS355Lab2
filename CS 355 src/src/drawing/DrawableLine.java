@@ -33,4 +33,10 @@ public class DrawableLine extends Line implements DrawableShape {
 		
 	}
 
+	@Override
+	public void dragShape(Graphics2D g2g, int index) {
+		// TODO Auto-generated method stub
+		
+	}
+
 }

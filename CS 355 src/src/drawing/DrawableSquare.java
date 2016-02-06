@@ -38,4 +38,10 @@ public class DrawableSquare extends Square implements DrawableShape {
 				(int) this.getSize()/2, (int) this.getSize()/2);
 	}
 
+	@Override
+	public void dragShape(Graphics2D g2g, int index) {
+		// TODO Auto-generated method stub
+		
+	}
+
 }

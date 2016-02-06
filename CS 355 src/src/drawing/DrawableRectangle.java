@@ -38,4 +38,10 @@ public class DrawableRectangle extends Rectangle implements DrawableShape {
 				(int) this.getWidth(), (int) this.getHeight());
 	}
 
+	@Override
+	public void dragShape(Graphics2D g2g, int index) {
+		// TODO Auto-generated method stub
+		
+	}
+
 }

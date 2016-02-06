@@ -129,6 +129,7 @@ public class Controller implements CS355Controller, MouseListener, MouseMotionLi
 			case SQUARE 	:		createsquare(); break;
 			case ELLIPSE 	:		createellipse(); break;
 			case CIRCLE 	:		createcircle(); break;
+			case SELECT		:		dragShape(); break;
 		}
 		if(curshape != CurShape.TRIANGLE){
 			startclick = tempstart;
@@ -264,7 +265,9 @@ public class Controller implements CS355Controller, MouseListener, MouseMotionLi
 	@Override
 	public void doDeleteShape() {
 		// TODO Auto-generated method stub
-
+		model.deleteShape(model.getSelectedShapeIndex());
+		model.outsideChange();
+		model.notifyObservers();
 	}
 
 	@Override
@@ -312,25 +315,25 @@ public class Controller implements CS355Controller, MouseListener, MouseMotionLi
 	@Override
 	public void doMoveForward() {
 		// TODO Auto-generated method stub
-
+		model.moveForward(model.getSelectedShapeIndex());
 	}
 
 	@Override
 	public void doMoveBackward() {
 		// TODO Auto-generated method stub
-
+		model.moveBackward(model.getSelectedShapeIndex());
 	}
 
 	@Override
 	public void doSendToFront() {
 		// TODO Auto-generated method stub
-
+		model.moveToFront(model.getSelectedShapeIndex());
 	}
 
 	@Override
 	public void doSendtoBack() {
 		// TODO Auto-generated method stub
-
+		model.movetoBack(model.getSelectedShapeIndex());
 	}
 	
 	//Drawing methods
@@ -492,9 +495,17 @@ public class Controller implements CS355Controller, MouseListener, MouseMotionLi
 				shape = model.getShape(i);
 				//TODO draw outline and selection tab
 				model.setSelectedShape(shape);
-				//model.notifyObservers();
+				model.setSelectedShapeIndex(i);
+				//change color
+				GUIFunctions.changeSelectedColor(shape.getColor());
+				curcolor = shape.getColor();
 			}
 		}
+	}
+	
+	private void dragShape() {
+		//TODO make each shape's drag method
+		//model.getSelectedShape().
 	}
 
 	private void clearpoints() {

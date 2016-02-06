@@ -1,6 +1,7 @@
 package cs355.model.drawing;
 
 import java.awt.Color;
+import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
 
 /**
@@ -74,7 +75,21 @@ public class Ellipse extends Shape {
 	 */
 	@Override
 	public boolean pointInShape(Point2D.Double pt, double tolerance) {
-		throw new UnsupportedOperationException("Not supported yet.");
+		//throw new UnsupportedOperationException("Not supported yet.");
+		Point2D.Double objpt = new Point2D.Double();
+		AffineTransform worldToObj = new AffineTransform();
+		worldToObj.translate(-this.getCenter().getX(), -this.getCenter().getY());
+		worldToObj.rotate(-this.getRotation());
+		worldToObj.transform(pt, objpt);
+		
+		boolean isInside = false;
+		double xdif = objpt.getX() / (width / 2);
+		double ydif = objpt.getY() / (height / 2);
+		
+		if(Math.pow(xdif, 2) + Math.pow(ydif, 2) <= 1){
+			isInside = true;
+		}
+		return isInside;
 	}
 
 }
