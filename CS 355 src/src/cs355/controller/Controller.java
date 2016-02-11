@@ -40,6 +40,8 @@ public class Controller implements CS355Controller, MouseListener, MouseMotionLi
 	private Point2D.Double startclick;
 	private Point2D.Double endclick;
 	
+	private Point2D.Double starttocenter;
+	
 	private CurShape curshape;
 	
 	public Controller(View view){
@@ -113,6 +115,7 @@ public class Controller implements CS355Controller, MouseListener, MouseMotionLi
 								} break;
 			case SELECT		:	selectshape();
 		}
+		starttocenter = null;
 		
 	}
 
@@ -129,9 +132,9 @@ public class Controller implements CS355Controller, MouseListener, MouseMotionLi
 			case SQUARE 	:		createsquare(); break;
 			case ELLIPSE 	:		createellipse(); break;
 			case CIRCLE 	:		createcircle(); break;
-			case SELECT		:		dragShape(); break;
+			case SELECT		:		dragShape(point); break;
 		}
-		if(curshape != CurShape.TRIANGLE){
+		if(curshape != CurShape.TRIANGLE && curshape != CurShape.SELECT){
 			startclick = tempstart;
 			endclick = tempend;
 			model.deleteShape(model.getShapes().size() - 1);
@@ -149,6 +152,11 @@ public class Controller implements CS355Controller, MouseListener, MouseMotionLi
 	public void colorButtonHit(Color c) {
 		GUIFunctions.changeSelectedColor(c);
 		curcolor = c;
+		if(model.getSelectedShape() != null) {
+			model.getSelectedShape().setColor(c);
+			model.outsideChange();
+			model.notifyObservers();
+		}
 	}
 
 	@Override
@@ -500,12 +508,27 @@ public class Controller implements CS355Controller, MouseListener, MouseMotionLi
 				GUIFunctions.changeSelectedColor(shape.getColor());
 				curcolor = shape.getColor();
 			}
+			else{
+				model.setSelectedShape(null);
+				model.setSelectedShapeIndex(-1);
+			}
 		}
 	}
 	
-	private void dragShape() {
+	private void dragShape(Point2D.Double point) {
 		//TODO make each shape's drag method
-		//model.getSelectedShape().
+		Shape shape = model.getSelectedShape();
+		//find difference between center of shape and clicked point
+		if(starttocenter == null){
+			starttocenter = new Point2D.Double(shape.getCenter().getX() - startclick.getX(), 
+					shape.getCenter().getY() - startclick.getY());
+		}
+		//change center to be the difference between the clicked point and the original center
+		Point2D.Double draggedcenter = new Point2D.Double(starttocenter.getX() + point.getX(),
+				starttocenter.getY() + point.getY());
+		shape.setCenter(draggedcenter);
+		model.outsideChange();
+		model.notifyObservers();
 	}
 
 	private void clearpoints() {
