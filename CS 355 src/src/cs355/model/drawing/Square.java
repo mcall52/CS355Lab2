@@ -3,6 +3,7 @@ package cs355.model.drawing;
 import java.awt.Color;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
+import java.awt.geom.Point2D.Double;
 
 /**
  * Add your square code here. You can add fields, but you cannot
@@ -71,6 +72,24 @@ public class Square extends Shape {
 		boolean isInside = false;
 		if(objpt.getX() <= this.getSize()/4 && objpt.getX() >= -this.getSize()/4
 				&& objpt.getY() <= this.getSize()/4 && objpt.getY() >= -this.getSize()/4){
+			isInside = true;
+		}
+		return isInside;
+	}
+
+	@Override
+	public boolean pointInHandle(Double pt, double tolerance) {
+		Point2D.Double objpt = new Point2D.Double();
+		AffineTransform worldToObj = new AffineTransform();
+		worldToObj.rotate(-this.getRotation());
+		worldToObj.translate(-this.getCenter().getX(), -this.getCenter().getY());
+		worldToObj.transform(pt, objpt);
+		
+		boolean isInside = false;
+		double xdif = objpt.getX();
+		double ydif = objpt.getY() + (getSize()/2/2 + HANDLE_DIST - HANDLE_RADIUS);
+		
+		if(Math.pow(xdif, 2) + Math.pow(ydif, 2) <= Math.pow(HANDLE_RADIUS, 2)){
 			isInside = true;
 		}
 		return isInside;

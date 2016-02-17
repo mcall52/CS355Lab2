@@ -4,15 +4,12 @@ import java.awt.Color;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
+import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
 import java.awt.geom.Point2D.Double;
 import java.io.File;
-import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.List;
-
 import cs355.GUIFunctions;
-import cs355.model.drawing.CS355Drawing;
 import cs355.model.drawing.Circle;
 import cs355.model.drawing.DrawingModel;
 import cs355.model.drawing.Ellipse;
@@ -43,6 +40,7 @@ public class Controller implements CS355Controller, MouseListener, MouseMotionLi
 	private Point2D.Double starttocenter;
 	
 	private CurShape curshape;
+	private boolean handleSelected;
 	
 	public Controller(View view){
 		model = new DrawingModel();
@@ -86,7 +84,11 @@ public class Controller implements CS355Controller, MouseListener, MouseMotionLi
 	public void mousePressed(MouseEvent arg0) {
 		Point2D.Double point = new Point2D.Double(arg0.getX(), arg0.getY());
 		GUIFunctions.printf("Point Pressed: %s", point.toString());
-		startclick = (Double) point.clone();
+		startclick = point;
+		switch (curshape){
+			case SELECT		:	selectshape();
+			default			: 	//do nothing
+		}
 	}
 
 	@Override
@@ -113,7 +115,8 @@ public class Controller implements CS355Controller, MouseListener, MouseMotionLi
 									createtriangle();
 									clearpoints();
 								} break;
-			case SELECT		:	selectshape();
+			case SELECT		:	handleSelected = false;
+			default 		:	//do nothing
 		}
 		starttocenter = null;
 		
@@ -132,7 +135,12 @@ public class Controller implements CS355Controller, MouseListener, MouseMotionLi
 			case SQUARE 	:		createsquare(); break;
 			case ELLIPSE 	:		createellipse(); break;
 			case CIRCLE 	:		createcircle(); break;
-			case SELECT		:		dragShape(point); break;
+			case SELECT		:		if(handleSelected){
+										rotateShape(point);
+									}
+									else {
+										dragShape(point); //break;
+									}
 		}
 		if(curshape != CurShape.TRIANGLE && curshape != CurShape.SELECT){
 			startclick = tempstart;
@@ -349,7 +357,15 @@ public class Controller implements CS355Controller, MouseListener, MouseMotionLi
 		Point2D.Double center = new Point2D.Double(
 				averageOf(firstclick.getX(), secondclick.getX(), thirdclick.getX()), 
 				averageOf(firstclick.getY(), secondclick.getY(), thirdclick.getY()));
-		Triangle triangle = new Triangle(curcolor, center, firstclick, secondclick, thirdclick);
+		
+		Point2D.Double a = new Point2D.Double(firstclick.getX() - center.getX(), 
+				firstclick.getY() - center.getY());
+		Point2D.Double b = new Point2D.Double(secondclick.getX()- center.getX(),
+				secondclick.getY() - center.getY());
+		Point2D.Double c = new Point2D.Double(thirdclick.getX() - center.getX(), 
+				thirdclick.getY() - center.getY());
+		
+		Triangle triangle = new Triangle(curcolor, center, a, b, c);
 		model.addShape(triangle);
 		clearpoints();
 	}
@@ -485,7 +501,8 @@ public class Controller implements CS355Controller, MouseListener, MouseMotionLi
 	}
 
 	private void createline() {
-		Line line = new Line(curcolor, startclick, endclick);
+		Line line = new Line(curcolor, startclick, new Point2D.Double(endclick.getX() - startclick.getX(), 
+				endclick.getY() - startclick.getY()));
 		model.addShape(line);
 		clearpoints();
 	}
@@ -496,27 +513,33 @@ public class Controller implements CS355Controller, MouseListener, MouseMotionLi
 		boolean isInside = false;
 		Shape shape;
 		
-		while(i > 0 && !isInside){
-			i--;
-			if(model.getShape(i).pointInShape(endclick, 0)){
-				isInside = true;
-				shape = model.getShape(i);
-				//TODO draw outline and selection tab
-				model.setSelectedShape(shape);
-				model.setSelectedShapeIndex(i);
-				//change color
-				GUIFunctions.changeSelectedColor(shape.getColor());
-				curcolor = shape.getColor();
-			}
-			else{
-				model.setSelectedShape(null);
-				model.setSelectedShapeIndex(-1);
+		if(model.getSelectedShape() != null && model.getSelectedShape().pointInHandle(startclick, 0)){
+			System.out.println("selected!");
+			handleSelected = true;
+			//rotateShape();
+		}
+		else{
+			while(i > 0 && !isInside){
+				i--;
+				if(model.getShape(i).pointInShape(startclick, 4)){
+					isInside = true;
+					shape = model.getShape(i);
+					//TODO draw outline and selection tab
+					model.setSelectedShape(shape);
+					model.setSelectedShapeIndex(i);
+					//change color
+					GUIFunctions.changeSelectedColor(shape.getColor());
+					curcolor = shape.getColor();
+				}
+				else{
+					model.setSelectedShape(null);
+					model.setSelectedShapeIndex(-1);
+				}
 			}
 		}
 	}
 	
 	private void dragShape(Point2D.Double point) {
-		//TODO make each shape's drag method
 		Shape shape = model.getSelectedShape();
 		//find difference between center of shape and clicked point
 		if(starttocenter == null){
@@ -527,9 +550,51 @@ public class Controller implements CS355Controller, MouseListener, MouseMotionLi
 		Point2D.Double draggedcenter = new Point2D.Double(starttocenter.getX() + point.getX(),
 				starttocenter.getY() + point.getY());
 		shape.setCenter(draggedcenter);
+
 		model.outsideChange();
 		model.notifyObservers();
 	}
+	
+	//for rotation
+	//onMousePressed, if there is a selected shape, check if the handle is selected
+	//if the handle is not selected, check if the shape is selected to prevent from selecting other shapes
+	//onMouseDragged, if shape is selected
+	//if handle is selected, apply rotation, otherwise, apply drag
+	//applyRotation
+	private void rotateShape(Point2D.Double pt){
+		//get current shape
+		Shape shape = model.getSelectedShape();
+		//World to Object Transformation
+		Point2D.Double objpt = new Point2D.Double();
+		AffineTransform worldToObj = new AffineTransform();
+		worldToObj.rotate(-shape.getRotation());
+		worldToObj.translate(-shape.getCenter().getX(), -shape.getCenter().getY());
+		worldToObj.transform(pt, objpt);
+		if(shape instanceof Line){
+			if(shape.pointInHandle(objpt, 0)){ //startHandle selected
+				//TODO change center of line but keep end in same spot
+			}
+			else{ //endHandle selected
+				//TODO change endpoint. Should be easy
+			}
+		}
+		else{
+			//calculate rotation
+			shape.setRotation(Math.atan2(objpt.getY(), objpt.getX()));
+			System.out.println(shape.getRotation());
+		}
+		model.outsideChange();
+		model.notifyObservers();
+		GUIFunctions.refresh();
+		//Object to World Transformation
+//		AffineTransform objToWorld = new AffineTransform();
+//		objToWorld.rotate(shape.getRotation());
+//		objToWorld.translate(shape.getCenter().getX(), shape.getCenter().getY());
+		//g2g.setTransform(objToWorld);
+		
+	}
+	//calculate rotation(objectPOint)
+	//return Math.atan2(objectPOInt.y, objectPOInt.x)
 
 	private void clearpoints() {
 		// TODO Auto-generated method stub

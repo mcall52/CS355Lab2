@@ -3,6 +3,7 @@ package cs355.model.drawing;
 import java.awt.Color;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
+import java.awt.geom.Point2D.Double;
 
 /**
  * Add your triangle code here. You can add fields, but you cannot
@@ -14,6 +15,8 @@ public class Triangle extends Shape {
 	private Point2D.Double a;
 	private Point2D.Double b;
 	private Point2D.Double c;
+	
+	private Point2D.Double highestpoint;
 
 	/**
 	 * Basic constructor that sets all fields.
@@ -97,12 +100,12 @@ public class Triangle extends Shape {
 		//throw new UnsupportedOperationException("Not supported yet.");
 		Point2D.Double objpt = new Point2D.Double();
 		AffineTransform worldToObj = new AffineTransform();
-		worldToObj.translate(-this.getCenter().getX(), -this.getCenter().getY());
 		worldToObj.rotate(-this.getRotation());
+		worldToObj.translate(-this.getCenter().getX(), -this.getCenter().getY());
 		worldToObj.transform(pt, objpt);
 		
 		boolean isInside = true;
-		Point2D.Double[] points = new Point2D.Double[]{a, b, c};
+		Point2D.Double[] points = new Point2D.Double[]{this.a, this.b, this.c};
 		for(int i = 0; i < points.length; i++){
 			int next = i + 1;
 			if (next > 2){
@@ -119,6 +122,39 @@ public class Triangle extends Shape {
 			}
 		}
 		return isInside;
+	}
+
+	@Override
+	public boolean pointInHandle(Double pt, double tolerance) {
+		Point2D.Double objpt = new Point2D.Double();
+		AffineTransform worldToObj = new AffineTransform();
+		worldToObj.rotate(-this.getRotation());
+		worldToObj.translate(-this.getCenter().getX(), -this.getCenter().getY());
+		worldToObj.transform(pt, objpt);
+		
+		boolean isInside = false;
+		double xdif = objpt.getX();
+		double ydif = objpt.getY() + (getHighestPoint().getY() + HANDLE_DIST - HANDLE_RADIUS);
+		
+		if(Math.pow(xdif, 2) + Math.pow(ydif, 2) <= Math.pow(HANDLE_RADIUS, 2)){
+			isInside = true;
+		}
+		return isInside;
+	}
+	
+	protected Point2D.Double getHighestPoint(){
+		Point2D.Double highestpoint = new Point2D.Double(0, 0);
+		if(highestpoint.getY() < this.getA().getY()){
+			highestpoint = this.getA();
+		}
+		if(highestpoint.getY() < this.getB().getY()){
+			highestpoint = this.getB();
+		}
+		if(highestpoint.getY() < this.getC().getY()){
+			highestpoint = this.getC();
+		}
+		
+		return highestpoint;
 	}
 
 }

@@ -18,25 +18,38 @@ public class DrawableLine extends Line implements DrawableShape {
 	public void draw(Graphics2D g2g) {
 		g2g.setColor(this.getColor());
 		AffineTransform objToWorld = new AffineTransform();
-		objToWorld.rotate(getRotation());
 		objToWorld.translate(getCenter().getX(), getCenter().getY());
+		objToWorld.rotate(getRotation());
 		g2g.setTransform(objToWorld);
 		
-		g2g.drawLine(0, 0,(int) (this.getEnd().getX() - this.getCenter().getX()), 
-				(int) (this.getEnd().getY() - this.getCenter().getY()));
+		g2g.drawLine(0, 0,(int) (this.getEnd().getX()), 
+				(int) (this.getEnd().getY()));
 		
 	}
 
 	@Override
 	public void drawOutline(Graphics2D g2g) {
-		// TODO Auto-generated method stub
+		g2g.setColor(Color.YELLOW);
+		AffineTransform objToWorld = new AffineTransform();
+		objToWorld.translate(getCenter().getX(), getCenter().getY());
+		objToWorld.rotate(getRotation());
+		g2g.setTransform(objToWorld);
+		drawHandle(g2g);
 		
+		g2g.drawOval((int) -HANDLE_RADIUS, (int) -HANDLE_RADIUS, 
+				(int) HANDLE_RADIUS * 2, (int) HANDLE_RADIUS * 2);
 	}
 
 	@Override
-	public void dragShape(Graphics2D g2g, int index) {
+	public void drawHandle(Graphics2D g2g) {
+		g2g.drawOval((int) (this.getEnd().getX() - HANDLE_RADIUS), (int) (this.getEnd().getY() - HANDLE_RADIUS), 
+				(int) HANDLE_RADIUS * 2, (int) HANDLE_RADIUS * 2);
+	}
+
+	@Override
+	public Double getHandleCenter() {
 		// TODO Auto-generated method stub
-		
+		return null;
 	}
 
 }

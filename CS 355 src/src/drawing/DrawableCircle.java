@@ -22,8 +22,8 @@ public class DrawableCircle extends Circle implements DrawableShape {
 	public void draw(Graphics2D g2g) {
 		g2g.setColor(this.getColor());
 		AffineTransform objToWorld = new AffineTransform();
-		objToWorld.rotate(getRotation());
 		objToWorld.translate(getCenter().getX(), getCenter().getY());
+		objToWorld.rotate(getRotation());
 		g2g.setTransform(objToWorld);
 		
 		g2g.fillOval((int) -(this.getRadius()), (int) -(this.getRadius()), 
@@ -32,21 +32,27 @@ public class DrawableCircle extends Circle implements DrawableShape {
 
 	@Override
 	public void drawOutline(Graphics2D g2g) {
-		// TODO Auto-generated method stub
 		g2g.setColor(Color.YELLOW);
 		AffineTransform objToWorld = new AffineTransform();
-		objToWorld.rotate(getRotation());
 		objToWorld.translate(getCenter().getX(), getCenter().getY());
+		objToWorld.rotate(getRotation());
 		g2g.setTransform(objToWorld);
+//		drawHandle(g2g);
 		
 		g2g.drawOval((int) -(this.getRadius()), (int) -(this.getRadius()), 
 				(int) this.getRadius()*2, (int) this.getRadius()*2);
 	}
 
 	@Override
-	public void dragShape(Graphics2D g2g, int index) {
+	public void drawHandle(Graphics2D g2g) {		
+//		g2g.drawOval((int) -(HANDLE_RADIUS), (int) -(this.getRadius() + 20), 
+//				(int) HANDLE_RADIUS*2, (int) HANDLE_RADIUS*2);	
+	}
+
+	@Override
+	public Double getHandleCenter() {
 		// TODO Auto-generated method stub
-		
+		return null;
 	}
 
 }

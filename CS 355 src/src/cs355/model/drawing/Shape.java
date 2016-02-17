@@ -17,6 +17,10 @@ public abstract class Shape {
 
 	// The rotation of this shape.
 	protected double rotation;
+	
+	protected static final double HANDLE_RADIUS = 8; //pixels  
+
+	protected static final double HANDLE_DIST = 20; //pixels from the top of radius
 
 	/**
 	 * Basic constructor that sets fields.
@@ -85,4 +89,6 @@ public abstract class Shape {
 	 * @return true if pt is in the shape, false otherwise.
 	 */
 	public abstract boolean pointInShape(Point2D.Double pt, double tolerance);
+	
+	public abstract boolean pointInHandle(Point2D.Double pt, double tolerance);
 }

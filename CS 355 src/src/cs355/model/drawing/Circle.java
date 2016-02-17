@@ -3,6 +3,7 @@ package cs355.model.drawing;
 import java.awt.Color;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
+import java.awt.geom.Point2D.Double;
 
 /**
  * Add your circle code here. You can add fields, but you cannot
@@ -57,8 +58,8 @@ public class Circle extends Shape {
 		//throw new UnsupportedOperationException("Not supported yet.");
 		Point2D.Double objpt = new Point2D.Double();
 		AffineTransform worldToObj = new AffineTransform();
-		worldToObj.translate(-this.getCenter().getX(), -this.getCenter().getY());
 		worldToObj.rotate(-this.getRotation());
+		worldToObj.translate(-this.getCenter().getX(), -this.getCenter().getY());
 		worldToObj.transform(pt, objpt);
 		
 		boolean isInside = false;
@@ -69,6 +70,12 @@ public class Circle extends Shape {
 			isInside = true;
 		}
 		return isInside;
+	}
+
+	@Override
+	public boolean pointInHandle(Double pt, double tolerance) {
+		// TODO Auto-generated method stub
+		return false;
 	}
 
 }
