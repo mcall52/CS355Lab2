@@ -9,6 +9,8 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Point2D.Double;
 import java.io.File;
 import java.util.Iterator;
+
+import Transform.Transform;
 import cs355.GUIFunctions;
 import cs355.model.drawing.Circle;
 import cs355.model.drawing.DrawingModel;
@@ -18,10 +20,15 @@ import cs355.model.drawing.Rectangle;
 import cs355.model.drawing.Shape;
 import cs355.model.drawing.Square;
 import cs355.model.drawing.Triangle;
+import cs355.model.image.CS355Image;
+import cs355.model.scene.CS355Scene;
+import cs355.model.scene.Point3D;
 import cs355.view.View;
 
 public class Controller implements CS355Controller, MouseListener, MouseMotionListener {
 
+	private final double STARTING_VIEW_POINT = 768;
+	
 	//private View view;
 	private DrawingModel model;
 	private Color curcolor;
@@ -42,12 +49,39 @@ public class Controller implements CS355Controller, MouseListener, MouseMotionLi
 	private CurShape curshape;
 	private boolean handleSelected;
 	
+	private Point2D.Double viewupperleft;
+	
+	//3D Variables 
+	private final int W = 87;
+	private final int A = 65;
+	private final int S = 83;
+	private final int D = 68;
+	private final int Q = 81;
+	private final int E = 69;
+	private final int R = 82;
+	private final int F = 70;
+	private final int H = 72;
+	
+	private boolean is3d = false;
+	private Point3D campos = new Point3D(0, -3, 0);
+	private float camangle = 0;
+	private Point3D initialcampos = new Point3D(0, -3, 0);
+	private float initialcamrot;
+	private CS355Scene scene = new CS355Scene();
+	
+	//Lab 6 variables
+	private CS355Image image = new DrawingImage();
+	
 	public Controller(View view){
 		model = new DrawingModel();
 		curshape = CurShape.SELECT;
 		curcolor = Color.WHITE;
 		this.view = view;
 		view.addModel(model);
+		viewupperleft = new Point2D.Double(STARTING_VIEW_POINT, STARTING_VIEW_POINT);
+		
+		image.deleteObservers();
+		image.addObserver(view);
 	}
 	
 	@Override
@@ -83,7 +117,7 @@ public class Controller implements CS355Controller, MouseListener, MouseMotionLi
 	@Override
 	public void mousePressed(MouseEvent arg0) {
 		Point2D.Double point = new Point2D.Double(arg0.getX(), arg0.getY());
-		GUIFunctions.printf("Point Pressed: %s", point.toString());
+//		GUIFunctions.printf("Point Pressed: %s", point.toString());
 		startclick = point;
 		switch (curshape){
 			case SELECT		:	selectshape();
@@ -94,7 +128,7 @@ public class Controller implements CS355Controller, MouseListener, MouseMotionLi
 	@Override
 	public void mouseReleased(MouseEvent arg0) {
 		Point2D.Double point = new Point2D.Double(arg0.getX(), arg0.getY());
-		GUIFunctions.printf("Point Released: %s", point.toString());
+//		GUIFunctions.printf("Point Released: %s", point.toString());
 		endclick = (Double) point.clone();
 		
 		//Draw
@@ -211,61 +245,178 @@ public class Controller implements CS355Controller, MouseListener, MouseMotionLi
 
 	@Override
 	public void zoomInButtonHit() {
-		// TODO Auto-generated method stub
-
+		if(view.getScaleFactor() < 4){
+			view.zoomIn();
+			
+			Point2D.Double newupperleft = 
+					new Point2D.Double(viewupperleft.x + ((512/view.getScaleFactor())/2),
+							viewupperleft.y + ((512/view.getScaleFactor())/2));
+			viewupperleft = newupperleft;
+			
+			view.setViewUpperLeft(viewupperleft);
+			doZoom();
+		}
 	}
 
 	@Override
 	public void zoomOutButtonHit() {
-		// TODO Auto-generated method stub
+		if(view.getScaleFactor() > .25){
+			view.zoomOut();
+			
+			Point2D.Double newupperleft = 
+					new Point2D.Double(viewupperleft.x - ((512/view.getScaleFactor())/2),
+							viewupperleft.y - ((512/view.getScaleFactor())/2));
+			if(newupperleft.x < 0){
+				newupperleft.x = 0;
+			}
+			if(newupperleft.y < 0){
+				newupperleft.y = 0;
+			}
+			if(newupperleft.x + (512/view.getScaleFactor()) > 2048){
+				newupperleft.x = 2048 - (512/view.getScaleFactor());
+			}
+			if(newupperleft.y + (512/view.getScaleFactor()) > 2048){
+				newupperleft.y = 2048 - (512/view.getScaleFactor());
+			}
+			
+			view.setViewUpperLeft(viewupperleft);
+			doZoom();
+		}
+	}
+	
+	public void doZoom(){
+		int barsize = (int) (512 / view.getScaleFactor());
+		int hscrollpos = (int) viewupperleft.x;
+		int vscrollpos = (int) viewupperleft.y;
 
+		GUIFunctions.setZoomText(view.getScaleFactor());
+		
+		GUIFunctions.setHScrollBarPosit(hscrollpos);
+		GUIFunctions.setHScrollBarKnob(barsize);
+
+		GUIFunctions.setVScrollBarPosit(vscrollpos);
+		GUIFunctions.setVScrollBarKnob(barsize);
+		GUIFunctions.refresh();
+		
 	}
 
 	@Override
 	public void hScrollbarChanged(int value) {
-		// TODO Auto-generated method stub
-
+		viewupperleft.x = value;
+		GUIFunctions.refresh();
+		
 	}
 
 	@Override
 	public void vScrollbarChanged(int value) {
-		// TODO Auto-generated method stub
-
+		viewupperleft.y = value;
+		GUIFunctions.refresh();
 	}
 
 	@Override
 	public void openScene(File file) {
 		// TODO Auto-generated method stub
-
+//		CS355Scene scene = new CS355Scene();
+		
+		scene.open(file);
+		view.setScene(scene);
+		view.setCamPos(scene.getCameraPosition());
+		campos = scene.getCameraPosition();
+		initialcampos = scene.getCameraPosition();
+		initialcamrot = (float) scene.getCameraRotation();
+		GUIFunctions.refresh();
 	}
 
 	@Override
 	public void toggle3DModelDisplay() {
-		// TODO Auto-generated method stub
-
+		is3d = true;
+		view.is3d = true;
 	}
 
 	@Override
 	public void keyPressed(Iterator<Integer> iterator) {
-		// TODO Auto-generated method stub
-
+		if(is3d){
+			switch(iterator.next()){
+			case (W)	:	campos.x -= 1 * (float)Math.sin(camangle);
+        					campos.z += 1 * (float)Math.cos(camangle);
+//        					view.setCamPos(campos);
+        					scene.setCameraPosition(campos);
+        					GUIFunctions.refresh();
+        					break;
+        					
+			case (A)	:	campos.x += 1 *  (float)Math.cos(camangle);
+        					campos.z += 1 * (float)Math.sin(camangle);
+//        					view.setCamPos(campos);
+        					scene.setCameraPosition(campos);
+        					GUIFunctions.refresh();
+        					break;
+        					
+			case (S)	:	campos.x += 1 *  (float)Math.sin(camangle);
+        					campos.z -= 1 * (float)Math.cos(camangle);
+//        					view.setCamPos(campos);
+        					scene.setCameraPosition(campos);
+        					GUIFunctions.refresh();
+        					break;
+        					
+			case (D)	:	campos.x -= 1 *  (float)Math.cos((camangle));
+        					campos.z -= 1 * (float)Math.sin((camangle));
+//        					view.setCamPos(campos);
+        					scene.setCameraPosition(campos);
+        					GUIFunctions.refresh();
+        					break;
+        					
+			case (Q)	:	camangle += -Math.PI/16;
+//							view.setCamangle(camangle);
+							scene.setCameraRotation(camangle);
+							GUIFunctions.refresh();
+							break;
+							
+			case (E)	:	camangle += Math.PI/16;
+//							view.setCamangle(camangle);
+							scene.setCameraRotation(camangle);
+							GUIFunctions.refresh();
+							break;
+							
+			case (R)	:	campos.y += Math.PI/16;
+//							view.setCamPos(campos);
+							scene.setCameraRotation(camangle);
+							GUIFunctions.refresh();
+							break;
+							
+			case (F)	:	campos.y += -Math.PI/16;
+//							view.setCamPos(campos);
+							scene.setCameraRotation(camangle);
+							GUIFunctions.refresh();
+							break;
+							
+			case (H)	:	//set default values
+							campos = initialcampos;
+							camangle = initialcamrot;
+							scene.setCameraPosition(campos);
+							scene.setCameraRotation(camangle);
+							GUIFunctions.refresh();
+							break;
+				default 	:	//do nothing
+			}
+		}
 	}
 
 	@Override
 	public void openImage(File file) {
-		
+		image.open(file);
+		view.setImage(image);
 	}
 
 	@Override
 	public void saveImage(File file) {
-		// TODO Auto-generated method stub
-
+		image.save(file);
+		
 	}
 
 	@Override
 	public void toggleBackgroundDisplay() {
-		// TODO Auto-generated method stub
-
+		view.toggleDrawImage();
+		GUIFunctions.refresh();
 	}
 
 	@Override
@@ -289,43 +440,43 @@ public class Controller implements CS355Controller, MouseListener, MouseMotionLi
 	@Override
 	public void doEdgeDetection() {
 		// TODO Auto-generated method stub
-
+		image.edgeDetection();
 	}
 
 	@Override
 	public void doSharpen() {
 		// TODO Auto-generated method stub
-
+		image.sharpen();
 	}
 
 	@Override
 	public void doMedianBlur() {
 		// TODO Auto-generated method stub
-
+		image.medianBlur();
 	}
 
 	@Override
 	public void doUniformBlur() {
 		// TODO Auto-generated method stub
-
+		image.uniformBlur();
 	}
 
 	@Override
 	public void doGrayscale() {
 		// TODO Auto-generated method stub
-
+		image.grayscale();
 	}
 
 	@Override
 	public void doChangeContrast(int contrastAmountNum) {
 		// TODO Auto-generated method stub
-
+		image.contrast(contrastAmountNum);
 	}
 
 	@Override
 	public void doChangeBrightness(int brightnessAmountNum) {
 		// TODO Auto-generated method stub
-
+		image.brightness(brightnessAmountNum);
 	}
 
 	@Override
@@ -354,16 +505,25 @@ public class Controller implements CS355Controller, MouseListener, MouseMotionLi
 	
 	//Drawing methods
 	private void createtriangle() {
-		Point2D.Double center = new Point2D.Double(
-				averageOf(firstclick.getX(), secondclick.getX(), thirdclick.getX()), 
-				averageOf(firstclick.getY(), secondclick.getY(), thirdclick.getY()));
+		AffineTransform viewToWorld = Transform.viewToWorld(viewupperleft.x, viewupperleft.y, view.getScaleFactor());
 		
-		Point2D.Double a = new Point2D.Double(firstclick.getX() - center.getX(), 
-				firstclick.getY() - center.getY());
-		Point2D.Double b = new Point2D.Double(secondclick.getX()- center.getX(),
-				secondclick.getY() - center.getY());
-		Point2D.Double c = new Point2D.Double(thirdclick.getX() - center.getX(), 
-				thirdclick.getY() - center.getY());
+		Point2D.Double worldfirst = new Point2D.Double(); 
+		Point2D.Double worldsecond = new Point2D.Double();
+		Point2D.Double worldthird = new Point2D.Double();
+		viewToWorld.transform(firstclick, worldfirst);
+		viewToWorld.transform(secondclick, worldsecond);
+		viewToWorld.transform(thirdclick, worldthird);
+
+		Point2D.Double center = new Point2D.Double(
+				averageOf(worldfirst.getX(), worldsecond.getX(), worldthird.getX()), 
+				averageOf(worldfirst.getY(), worldsecond.getY(), worldthird.getY()));
+		
+		Point2D.Double a = new Point2D.Double(worldfirst.getX() - center.getX(), 
+				worldfirst.getY() - center.getY());
+		Point2D.Double b = new Point2D.Double(worldsecond.getX()- center.getX(),
+				worldsecond.getY() - center.getY());
+		Point2D.Double c = new Point2D.Double(worldthird.getX() - center.getX(), 
+				worldthird.getY() - center.getY());
 		
 		Triangle triangle = new Triangle(curcolor, center, a, b, c);
 		model.addShape(triangle);
@@ -371,8 +531,15 @@ public class Controller implements CS355Controller, MouseListener, MouseMotionLi
 	}
 
 	private void createcircle() {
-		double width = Math.abs(startclick.getX() - endclick.getX());
-		double height = Math.abs(startclick.getY() - endclick.getY());
+		AffineTransform viewToWorld = Transform.viewToWorld(viewupperleft.x, viewupperleft.y, view.getScaleFactor());
+		
+		Point2D.Double worldstart = new Point2D.Double(); 
+		Point2D.Double worldend = new Point2D.Double();
+		viewToWorld.transform(startclick, worldstart);
+		viewToWorld.transform(endclick, worldend);
+
+		double width = Math.abs(worldstart.getX() - worldend.getX());
+		double height = Math.abs(worldstart.getY() - worldend.getY());
 		String longestEdge = "width";
 		
 		double radius = width / 2;
@@ -384,27 +551,27 @@ public class Controller implements CS355Controller, MouseListener, MouseMotionLi
 		
 		//find center for each coordinate according to shortest side (width or height)
 		//1st Quadrant (bottom-right)
-		if(startclick.getX() < endclick.getX() 
-				&& startclick.getY() < endclick.getY()){
-			center = new Point2D.Double(averageOf(startclick.getX(), startclick.getX() + radius * 2), 
-					averageOf(startclick.getY(), startclick.getY() + radius * 2));
+		if(worldstart.getX() < worldend.getX() 
+				&& worldstart.getY() < worldend.getY()){
+			center = new Point2D.Double(averageOf(worldstart.getX(), worldstart.getX() + radius * 2), 
+					averageOf(worldstart.getY(), worldstart.getY() + radius * 2));
 		}
 		//2nd Quadrant (bottom-left)
-		else if(startclick.getX() > endclick.getX()
-				&& startclick.getY() < endclick.getY()){
-			center = new Point2D.Double(averageOf(startclick.getX(), startclick.getX() - radius * 2), 
-					averageOf(startclick.getY(), startclick.getY() + radius * 2));
+		else if(worldstart.getX() > worldend.getX()
+				&& worldstart.getY() < worldend.getY()){
+			center = new Point2D.Double(averageOf(worldstart.getX(), worldstart.getX() - radius * 2), 
+					averageOf(worldstart.getY(), worldstart.getY() + radius * 2));
 		}
 		//3rd Quadrant (top-left)
-		else if(startclick.getX() > endclick.getX()
-				&& startclick.getY() > endclick.getY()){
-			center = new Point2D.Double(averageOf(startclick.getX(), startclick.getX() - radius * 2), 
-					averageOf(startclick.getY(), startclick.getY() - radius * 2));		
+		else if(worldstart.getX() > worldend.getX()
+				&& worldstart.getY() > worldend.getY()){
+			center = new Point2D.Double(averageOf(worldstart.getX(), worldstart.getX() - radius * 2), 
+					averageOf(worldstart.getY(), worldstart.getY() - radius * 2));		
 		}
 		//4th Quadrant (top-right)
 		else{
-			center = new Point2D.Double(averageOf(startclick.getX(), startclick.getX() + radius * 2), 
-					averageOf(startclick.getY(), startclick.getY() - radius * 2));
+			center = new Point2D.Double(averageOf(worldstart.getX(), worldstart.getX() + radius * 2), 
+					averageOf(worldstart.getY(), worldstart.getY() - radius * 2));
 		}
 //		Point2D.Double center = new Point2D.Double(averageOf(startclick.getX(), endclick.getX()), 
 //				averageOf(startclick.getY(), endclick.getY()));
@@ -417,10 +584,17 @@ public class Controller implements CS355Controller, MouseListener, MouseMotionLi
 	}
 
 	private void createellipse() {
-		double width = Math.abs(startclick.getX() - endclick.getX());
-		double height = Math.abs(startclick.getY() - endclick.getY());
-		Point2D.Double center = new Point2D.Double(averageOf(startclick.getX(), endclick.getX()), 
-				averageOf(startclick.getY(), endclick.getY()));
+		AffineTransform viewToWorld = Transform.viewToWorld(viewupperleft.x, viewupperleft.y, view.getScaleFactor());
+		
+		Point2D.Double worldstart = new Point2D.Double(); 
+		Point2D.Double worldend = new Point2D.Double();
+		viewToWorld.transform(startclick, worldstart);
+		viewToWorld.transform(endclick, worldend);
+		
+		double width = Math.abs(worldstart.getX() - worldend.getX());
+		double height = Math.abs(worldstart.getY() - worldend.getY());
+		Point2D.Double center = new Point2D.Double(averageOf(worldstart.getX(), worldend.getX()), 
+				averageOf(worldstart.getY(), worldend.getY()));
 		
 		Ellipse ellipse = new Ellipse(curcolor, center, width, height);
 		model.addShape(ellipse);
@@ -428,8 +602,15 @@ public class Controller implements CS355Controller, MouseListener, MouseMotionLi
 	}
 
 	private void createsquare() {
-		double width = Math.abs(startclick.getX() - endclick.getX());
-		double height = Math.abs(startclick.getY() - endclick.getY());
+		AffineTransform viewToWorld = Transform.viewToWorld(viewupperleft.x, viewupperleft.y, view.getScaleFactor());
+		
+		Point2D.Double worldstart = new Point2D.Double(); 
+		Point2D.Double worldend = new Point2D.Double();
+		viewToWorld.transform(startclick, worldstart);
+		viewToWorld.transform(endclick, worldend);
+		
+		double width = Math.abs(worldstart.getX() - worldend.getX());
+		double height = Math.abs(worldstart.getY() - worldend.getY());
 		double size;
 		
 		size = width * 2;
@@ -440,23 +621,23 @@ public class Controller implements CS355Controller, MouseListener, MouseMotionLi
 		Point2D.Double center;
 		
 		//1st Quadrant (bottom-right)
-		if(startclick.getX() < endclick.getX() 
-				&& startclick.getY() < endclick.getY()){
-			center = new Point2D.Double(startclick.getX() + (size / 4), startclick.getY() + (size / 4));
+		if(worldstart.getX() < worldend.getX() 
+				&& worldstart.getY() < worldend.getY()){
+			center = new Point2D.Double(worldstart.getX() + (size / 4), worldstart.getY() + (size / 4));
 		}
 		//2nd Quadrant (bottom-left)
-		else if(startclick.getX() > endclick.getX()
-				&& startclick.getY() < endclick.getY()){
-			center = new Point2D.Double(startclick.getX() - (size / 4), startclick.getY() + (size / 4));
+		else if(worldstart.getX() > worldend.getX()
+				&& worldstart.getY() < worldend.getY()){
+			center = new Point2D.Double(worldstart.getX() - (size / 4), worldstart.getY() + (size / 4));
 		}
 		//3rd Quadrant (top-left)
-		else if(startclick.getX() > endclick.getX()
-				&& startclick.getY() > endclick.getY()){
-			center = new Point2D.Double(startclick.getX() - (size / 4), startclick.getY() - (size / 4));
+		else if(worldstart.getX() > worldend.getX()
+				&& worldstart.getY() > worldend.getY()){
+			center = new Point2D.Double(worldstart.getX() - (size / 4), worldstart.getY() - (size / 4));
 		}
 		//4th Quadrant (top-right)
 		else{
-			center = new Point2D.Double(startclick.getX() + (size / 4), startclick.getY() - (size / 4));
+			center = new Point2D.Double(worldstart.getX() + (size / 4), worldstart.getY() - (size / 4));
 		}
 		
 		//when using upperleft
@@ -470,29 +651,36 @@ public class Controller implements CS355Controller, MouseListener, MouseMotionLi
 	}
 
 	private void createrectangle() {
-		double width = Math.abs(startclick.getX() - endclick.getX());
-		double height = Math.abs(startclick.getY() - endclick.getY());
+		AffineTransform viewToWorld = Transform.viewToWorld(viewupperleft.x, viewupperleft.y, view.getScaleFactor());
+		
+		Point2D.Double worldstart = new Point2D.Double(); 
+		Point2D.Double worldend = new Point2D.Double();
+		viewToWorld.transform(startclick, worldstart);
+		viewToWorld.transform(endclick, worldend);
+		
+		double width = Math.abs(worldstart.getX() - worldend.getX());
+		double height = Math.abs(worldstart.getY() - worldend.getY());
 		//Point2D.Double upperleft;
 		Point2D.Double center;
 		
 		//1st Quadrant (bottom-right)
-		if(startclick.getX() < endclick.getX() 
-				&& startclick.getY() < endclick.getY()){
-			center = new Point2D.Double(startclick.getX() + (width / 2), startclick.getY() + (height / 2));
+		if(worldstart.getX() < worldend.getX() 
+				&& worldstart.getY() < worldend.getY()){
+			center = new Point2D.Double(worldstart.getX() + (width / 2), worldstart.getY() + (height / 2));
 		}
 		//2nd Quadrant (bottom-left)
-		else if(startclick.getX() > endclick.getX()
-				&& startclick.getY() < endclick.getY()){
-			center = new Point2D.Double(startclick.getX() - (width / 2), startclick.getY() + (height / 2));
+		else if(worldstart.getX() > worldend.getX()
+				&& worldstart.getY() < worldend.getY()){
+			center = new Point2D.Double(worldstart.getX() - (width / 2), worldstart.getY() + (height / 2));
 		}
 		//3rd Quadrant (top-left)
-		else if(startclick.getX() > endclick.getX()
-				&& startclick.getY() > endclick.getY()){
-			center = new Point2D.Double(startclick.getX() - (width / 2), startclick.getY() - (height / 2));
+		else if(worldstart.getX() > worldend.getX()
+				&& worldstart.getY() > worldend.getY()){
+			center = new Point2D.Double(worldstart.getX() - (width / 2), worldstart.getY() - (height / 2));
 		}
 		//4th Quadrant (top-right)
 		else{
-			center = new Point2D.Double(startclick.getX() + (width / 2), startclick.getY() - (height / 2));
+			center = new Point2D.Double(worldstart.getX() + (width / 2), worldstart.getY() - (height / 2));
 		}
 			
 		Rectangle rectangle = new Rectangle(curcolor, center, width, height);
@@ -501,27 +689,41 @@ public class Controller implements CS355Controller, MouseListener, MouseMotionLi
 	}
 
 	private void createline() {
-		Line line = new Line(curcolor, startclick, new Point2D.Double(endclick.getX() - startclick.getX(), 
-				endclick.getY() - startclick.getY()));
+		AffineTransform viewToWorld = Transform.viewToWorld(viewupperleft.x, viewupperleft.y, view.getScaleFactor());
+		
+		Point2D.Double worldstart = new Point2D.Double(); 
+		Point2D.Double worldend = new Point2D.Double();
+		viewToWorld.transform(startclick, worldstart);
+		viewToWorld.transform(endclick, worldend);
+		
+		Line line = new Line(curcolor, worldstart, new Point2D.Double(worldend.getX() - worldstart.getX(), 
+				worldend.getY() - worldstart.getY()));
 		model.addShape(line);
 		clearpoints();
 	}
 	
 	private void selectshape() {
+		AffineTransform viewToWorld = Transform.viewToWorld(viewupperleft.x, viewupperleft.y, view.getScaleFactor());
+		
+		Point2D.Double worldstart = new Point2D.Double(); 
+//		Point2D.Double worldend = new Point2D.Double();
+		viewToWorld.transform(startclick, worldstart);
+//		viewToWorld.transform(endclick, worldend);
+		
 		//use endclick
 		int i = model.getShapes().size();
 		boolean isInside = false;
 		Shape shape;
 		
-		if(model.getSelectedShape() != null && model.getSelectedShape().pointInHandle(startclick, 0)){
-			System.out.println("selected!");
+		if(model.getSelectedShape() != null && model.getSelectedShape().pointInHandle(worldstart, 0)){
+//			System.out.println("selected!");
 			handleSelected = true;
 			//rotateShape();
 		}
 		else{
 			while(i > 0 && !isInside){
 				i--;
-				if(model.getShape(i).pointInShape(startclick, 4)){
+				if(model.getShape(i).pointInShape(worldstart, 4)){
 					isInside = true;
 					shape = model.getShape(i);
 					//TODO draw outline and selection tab
@@ -540,36 +742,47 @@ public class Controller implements CS355Controller, MouseListener, MouseMotionLi
 	}
 	
 	private void dragShape(Point2D.Double point) {
+		AffineTransform viewToWorld = Transform.viewToWorld(viewupperleft.x, viewupperleft.y, view.getScaleFactor());
+		
+		Point2D.Double worldstart = new Point2D.Double(); 
+		Point2D.Double worldpoint = new Point2D.Double();
+		
+		viewToWorld.transform(startclick, worldstart);
+		viewToWorld.transform(endclick, worldpoint);
+		
 		Shape shape = model.getSelectedShape();
 		//find difference between center of shape and clicked point
 		if(starttocenter == null){
-			starttocenter = new Point2D.Double(shape.getCenter().getX() - startclick.getX(), 
-					shape.getCenter().getY() - startclick.getY());
+			starttocenter = new Point2D.Double(shape.getCenter().getX() - worldstart.getX(), 
+					shape.getCenter().getY() - worldstart.getY());
 		}
 		//change center to be the difference between the clicked point and the original center
-		Point2D.Double draggedcenter = new Point2D.Double(starttocenter.getX() + point.getX(),
-				starttocenter.getY() + point.getY());
+		Point2D.Double draggedcenter = new Point2D.Double(starttocenter.getX() + worldpoint.getX(),
+				starttocenter.getY() + worldpoint.getY());
 		shape.setCenter(draggedcenter);
 
 		model.outsideChange();
 		model.notifyObservers();
 	}
 	
-	//for rotation
-	//onMousePressed, if there is a selected shape, check if the handle is selected
-	//if the handle is not selected, check if the shape is selected to prevent from selecting other shapes
-	//onMouseDragged, if shape is selected
-	//if handle is selected, apply rotation, otherwise, apply drag
-	//applyRotation
 	private void rotateShape(Point2D.Double pt){
+		AffineTransform viewToWorld = Transform.viewToWorld(viewupperleft.x, viewupperleft.y, view.getScaleFactor());
+				
 		//get current shape
 		Shape shape = model.getSelectedShape();
 		//World to Object Transformation
 		Point2D.Double objpt = new Point2D.Double();
-		AffineTransform worldToObj = new AffineTransform();
-		worldToObj.rotate(-shape.getRotation());
-		worldToObj.translate(-shape.getCenter().getX(), -shape.getCenter().getY());
+		Point2D.Double clickedpt = new Point2D.Double();
+		
+		AffineTransform worldToObj = Transform.worldToObj(shape.getCenter().x, 
+				shape.getCenter().y, shape.getRotation());
+		worldToObj.concatenate(viewToWorld);
+//		AffineTransform rotate = new AffineTransform()
+//		worldToObj.rotate(-shape.getRotation());
+//		worldToObj.translate(-shape.getCenter().getX(), -shape.getCenter().getY());
 		worldToObj.transform(pt, objpt);
+		worldToObj.transform(startclick, clickedpt);
+		
 		if(shape instanceof Line){
 			if(shape.pointInHandle(objpt, 0)){ //startHandle selected
 				//TODO change center of line but keep end in same spot
@@ -580,8 +793,9 @@ public class Controller implements CS355Controller, MouseListener, MouseMotionLi
 		}
 		else{
 			//calculate rotation
-			shape.setRotation(Math.atan2(objpt.getY(), objpt.getX()));
-			System.out.println(shape.getRotation());
+			shape.setRotation(Math.atan2(objpt.getY(), objpt.getX()) 
+					- Math.atan2(clickedpt.getY(), clickedpt.getX()));
+			//System.out.println(shape.getRotation()); //TODO check translate path 
 		}
 		model.outsideChange();
 		model.notifyObservers();
@@ -593,8 +807,6 @@ public class Controller implements CS355Controller, MouseListener, MouseMotionLi
 		//g2g.setTransform(objToWorld);
 		
 	}
-	//calculate rotation(objectPOint)
-	//return Math.atan2(objectPOInt.y, objectPOInt.x)
 
 	private void clearpoints() {
 		// TODO Auto-generated method stub

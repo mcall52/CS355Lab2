@@ -8,22 +8,28 @@ import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
 import java.awt.geom.Point2D.Double;
 
+import Transform.Transform;
 import cs355.model.drawing.Triangle;
 
 public class DrawableTriangle extends Triangle implements DrawableShape {
+	
+	private AffineTransform worldToView;
 
-	public DrawableTriangle(Color color, Double center, Double a, Double b, Double c) {
+	public DrawableTriangle(Color color, Double center, Double a, Double b, Double c, double rotation, AffineTransform worldToView) {
 		super(color, center, a, b, c);
-		// TODO Auto-generated constructor stub
+		this.setRotation(rotation);
+		this.worldToView = worldToView;
 	}
 
 	@Override
 	public void draw(Graphics2D g2g) {
 		g2g.setColor(this.getColor());
-		AffineTransform objToWorld = new AffineTransform();
-		objToWorld.translate(getCenter().getX(), getCenter().getY());
-		objToWorld.rotate(getRotation());
-		g2g.setTransform(objToWorld);
+		AffineTransform objToWorld = 
+				Transform.objToWorld(getCenter().getX(), getCenter().getY(), getRotation());
+		worldToView.concatenate(objToWorld);
+//		objToWorld.translate(getCenter().getX(), getCenter().getY());
+//		objToWorld.rotate(getRotation());
+		g2g.setTransform(worldToView);
 		
 		int[] xpoints = new int[]{(int) (this.getA().getX()), 
 				(int) (this.getB().getX()), 
@@ -37,10 +43,12 @@ public class DrawableTriangle extends Triangle implements DrawableShape {
 	@Override
 	public void drawOutline(Graphics2D g2g) {
 		g2g.setColor(Color.YELLOW);
-		AffineTransform objToWorld = new AffineTransform();
-		objToWorld.translate(getCenter().getX(), getCenter().getY());
-		objToWorld.rotate(getRotation());
-		g2g.setTransform(objToWorld);
+		AffineTransform objToWorld = 
+				Transform.objToWorld(getCenter().getX(), getCenter().getY(), getRotation());
+		worldToView.concatenate(objToWorld);
+//		objToWorld.translate(getCenter().getX(), getCenter().getY());
+//		objToWorld.rotate(getRotation());
+		g2g.setTransform(worldToView);
 		drawHandle(g2g);
 		
 		int[] xpoints = new int[]{(int) (this.getA().getX()), 
@@ -63,6 +71,11 @@ public class DrawableTriangle extends Triangle implements DrawableShape {
 	public Double getHandleCenter() {
 		// TODO Auto-generated method stub
 		return null;
+	}
+
+	@Override
+	public void setWorldToView(AffineTransform af) {
+		worldToView = af;
 	}
 
 }

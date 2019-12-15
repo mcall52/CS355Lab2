@@ -5,6 +5,8 @@ import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
 import java.awt.geom.Point2D.Double;
 
+import Transform.Transform;
+
 /**
  * Add your line code here. You can add fields, but you cannot
  * change the ones that already exist. This includes the names!
@@ -73,11 +75,12 @@ public class Line extends Shape {
 	@Override
 	public boolean pointInShape(Point2D.Double pt, double tolerance) {
 		Point2D.Double objpt = new Point2D.Double();
-		AffineTransform worldToObj = new AffineTransform();
+		AffineTransform worldToObj = 
+				Transform.worldToObj(getCenter().getX(), getCenter().getY(), getRotation());
 		//Point2D.Double objend = new Point2D.Double();
 		//Point2D.Double objstart = new Point2D.Double();
-		worldToObj.rotate(-this.getRotation());
-		worldToObj.translate(-this.getCenter().getX(), -this.getCenter().getY());
+//		worldToObj.rotate(-this.getRotation());
+//		worldToObj.translate(-this.getCenter().getX(), -this.getCenter().getY());
 		worldToObj.transform(pt, objpt); 
 		//worldToObj.transform(this.getStart(), objstart);
 		//worldToObj.transform(this.getEnd(), objend);
@@ -115,9 +118,10 @@ public class Line extends Shape {
 	@Override
 	public boolean pointInHandle(Double pt, double tolerance) {
 		Point2D.Double objpt = new Point2D.Double();
-		AffineTransform worldToObj = new AffineTransform();
-		worldToObj.rotate(-this.getRotation());
-		worldToObj.translate(-this.getCenter().getX(), -this.getCenter().getY());
+		AffineTransform worldToObj = 
+				Transform.worldToObj(getCenter().getX(), getCenter().getY(), getRotation());
+//		worldToObj.rotate(-this.getRotation());
+//		worldToObj.translate(-this.getCenter().getX(), -this.getCenter().getY());
 		worldToObj.transform(pt, objpt);
 		
 		boolean isInside = false;

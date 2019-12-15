@@ -1,6 +1,7 @@
 package drawing;
 
 import java.awt.Graphics2D;
+import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
 
 public interface DrawableShape {
@@ -12,4 +13,6 @@ public interface DrawableShape {
 	public void drawHandle(Graphics2D g2g);
 	
 	public Point2D.Double getHandleCenter();
+	
+	public void setWorldToView(AffineTransform af);
 }
